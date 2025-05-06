@@ -1,5 +1,23 @@
 from grocery_app.extensions import db
 from grocery_app.utils import FormEnum
+from flask_login import UserMixin
+
+shopping_list_table = db.Table('shopping_list',
+                               db.Column('user_id', db.Integer, db.ForeignKey(
+                                   'user.id'), primary_key=True),
+                               db.Column('item_id', db.Integer, db.ForeignKey(
+                                   'grocery_item.id'), primary_key=True)
+                               )
+
+
+class User(UserMixin, db.Model):
+    """User model."""
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), nullable=False, unique=True)
+    password = db.Column(db.String(200), nullable=False)
+
+    shopping_list_items = db.relationship(
+        'GroceryItem', secondary=shopping_list_table, backref='users_shopping_list')
 
 
 class ItemCategory(FormEnum):
@@ -19,6 +37,9 @@ class GroceryStore(db.Model):
     address = db.Column(db.String(200), nullable=False)
     items = db.relationship('GroceryItem', back_populates='store')
 
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_by = db.relationship('User')
+
 
 class GroceryItem(db.Model):
     """Grocery Item model."""
@@ -30,3 +51,6 @@ class GroceryItem(db.Model):
     store_id = db.Column(
         db.Integer, db.ForeignKey('grocery_store.id'), nullable=False)
     store = db.relationship('GroceryStore', back_populates='items')
+
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_by = db.relationship('User')

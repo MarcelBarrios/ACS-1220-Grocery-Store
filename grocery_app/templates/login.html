@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Log In</h1>
+<form method="POST" action="{{ url_for('auth.login') }}">
+    {{ form.csrf_token }}
+    <fieldset>
+        <legend>Enter Your Credentials</legend>
+
+        <div>
+            {{ form.username.label }}
+            {{ form.username(size=30) }}
+            {% if form.username.errors %}
+            <ul class="errors">
+                {% for error in form.username.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.password.label }}
+            {{ form.password(size=30) }}
+            {% if form.password.errors %}
+            <ul class="errors">
+                {% for error in form.password.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.submit() }}
+        </div>
+    </fieldset>
+</form>
+<p>Need an account? <a href="{{ url_for('auth.signup') }}">Sign Up</a></p>
+{% endblock %}

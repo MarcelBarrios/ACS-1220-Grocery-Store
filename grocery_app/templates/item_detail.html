@@ -3,29 +3,65 @@
 
 <h1>Item - {{ item.name }}</h1>
 
-<p><img src="{{ item.photo_url }}" width="250px" height="250px"></p>
+<p><img src="{{ item.photo_url if item.photo_url else url_for('static', filename='images/default.png') }}"
+        alt="{{ item.name }}" width="250px"></p>
+<p><strong>Price:</strong> ${{ "%.2f"|format(item.price) }}</p>
+<p><strong>Category:</strong> {{ item.category.value }}</p>
+<p><strong>Store:</strong> <a href="{{ url_for('main.store_detail', store_id=item.store.id) }}">{{ item.store.title
+        }}</a></p>
 
-<p><strong>Price:</strong> {{ item.price }}</p>
+{% if item.created_by %}
+<p><em>Added by: {{ item.created_by.username }}</em></p>
+{% endif %}
 
-<p><strong>Category:</strong> {{ item.category }}</p>
+<form method="POST" action="{{ url_for('main.add_to_shopping_list', item_id=item.id) }}" style="display: inline;">
+    {# <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" /> #}
+    <button type="submit">Add to Shopping List</button>
+</form>
 
-<p><strong>Store:</strong> {{ item.store.title }}</p>
-
-
+<hr>
 <h2>Edit Item</h2>
-
-<form>
+{# {% if item.created_by == current_user %} #}
+<form method="POST" action="{{ url_for('main.item_detail', item_id=item.id) }}">
+    {{ form.csrf_token }}
     <fieldset>
-        <legend>Please enter your information:</legend>
+        <legend>Update Item Information</legend>
 
+        <div>
+            {{ form.name.label }}<br>
+            {{ form.name(size=30) }}<br>
+            {% if form.name.errors %}<ul class="errors">{% for error in form.name.errors %}<li>{{ error }}</li>{% endfor
+                %}</ul>{% endif %}
+        </div>
+        <div>
+            {{ form.price.label }}<br>
+            {{ form.price() }}<br> {% if form.price.errors %}<ul class="errors">{% for error in form.price.errors %}<li>
+                    {{ error }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div>
+            {{ form.category.label }}<br>
+            {{ form.category() }}<br>
+            {% if form.category.errors %}<ul class="errors">{% for error in form.category.errors %}<li>{{ error }}</li>
+                {% endfor %}</ul>{% endif %}
+        </div>
+        <div>
+            {{ form.photo_url.label }}<br>
+            {{ form.photo_url(size=50) }}<br>
+            {% if form.photo_url.errors %}<ul class="errors">{% for error in form.photo_url.errors %}<li>{{ error }}
+                </li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div>
+            {{ form.store.label }}<br>
+            {{ form.store() }}<br>
+            {% if form.store.errors %}<ul class="errors">{% for error in form.store.errors %}<li>{{ error }}</li>{%
+                endfor %}</ul>{% endif %}
+        </div>
 
-
-        <!-- TODO: Remove the next paragraph and use the `form` object passed in 
-            from the route to render a form. -->
-        <p><em>Form fields go here!</em></p>
-
-        <input type="submit" value="Submit">
+        <div>
+            {{ form.submit() }}
+        </div>
     </fieldset>
 </form>
+{# {% endif %} #}
 
 {% endblock %}

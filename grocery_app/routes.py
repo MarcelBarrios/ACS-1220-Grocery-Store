@@ -1,10 +1,8 @@
-from flask import Blueprint, request, render_template, redirect, url_for, flash
+from flask import Blueprint, request, render_template, redirect, url_for, flash, abort
 from datetime import date, datetime
-from grocery_app.models import GroceryStore, GroceryItem, ItemCategory
+from grocery_app.models import GroceryStore, GroceryItem, ItemCategory, User, db
 from grocery_app.forms import GroceryStoreForm, GroceryItemForm
-
-# Import app and db from events_app package so that we can run app
-from grocery_app.extensions import app, db
+from flask_login import login_required, current_user
 
 main = Blueprint("main", __name__)
 
@@ -16,7 +14,7 @@ main = Blueprint("main", __name__)
 @main.route('/')
 def homepage():
     all_stores = GroceryStore.query.all()
-    print(all_stores)
+    # print(all_stores)
     return render_template('home.html', all_stores=all_stores)
 
 
@@ -116,3 +114,25 @@ def item_detail(item_id):
 
     # TODO: Send the form to the template and use it to render the form fields
     return render_template('item_detail.html', item=item, form=form)
+
+
+@main.route('/add_to_shopping_list/<int:item_id>', methods=['POST'])
+@login_required
+def add_to_shopping_list(item_id):
+    item = GroceryItem.query.get_or_404(item_id)
+
+    if item in current_user.shopping_list_items:
+        flash(f'{item.name} is already in your shopping list.', 'info')
+    else:
+        current_user.shopping_list_items.append(item)
+        db.session.commit()
+        flash(f'{item.name} added to your shopping list.', 'success')
+
+    return redirect(request.referrer or url_for('main.shopping_list'))
+
+
+@main.route('/shopping_list')
+@login_required
+def shopping_list():
+    items = current_user.shopping_list_items.all()
+    return render_template('shopping_list.html', shopping_list=items, title='Shopping List')
